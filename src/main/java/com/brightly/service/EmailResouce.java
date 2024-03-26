@@ -4,22 +4,19 @@ import com.brightly.mailengine.proto.Message;
 import com.brightly.mailengine.proto.Messages;
 import com.brightly.mailengine.proto.MutinyMailEngineGrpc;
 import com.brightly.mailengine.proto.Response;
-//import freemarker.template.Configuration;
-//import freemarker.template.Template;
 
-//import com.github.mustachejava.DefaultMustacheFactory;
-//import com.github.mustachejava.Mustache;
-//import com.github.mustachejava.MustacheFactory;
+
+import com.github.jknack.handlebars.Handlebars;
+import com.github.jknack.handlebars.Template;
 import io.quarkus.grpc.GrpcService;
 import io.quarkus.mailer.Mail;
 import io.smallrye.mutiny.Uni;
 import jakarta.inject.Inject;
 import org.jboss.logging.Logger;
-import org.thymeleaf.TemplateEngine;
-import org.thymeleaf.context.Context;
 
 import java.io.IOException;
-import java.io.StringWriter;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,38 +29,50 @@ public class EmailResouce extends MutinyMailEngineGrpc.MailEngineImplBase {
     @Inject
     Logger logger;
 
-
-    /*
-    For thymeleaf
-     */
-
-    @Inject
-    TemplateEngine templateEngine;
-
     @Override
     public Uni<Response> sendMessage(Messages request) {
-
 
         List<Message> msgs = request.getMessagesList();
         List<Mail> mails = new ArrayList<>();
 
         for (Message msg : msgs) {
-            Context context = new Context();
-            context.setVariable("Subject", msg.getSubject()); // Set dynamic value
-            context.setVariable("Body", msg.getBody()); // Set dynamic value
-
-            String renderedTemplate = templateEngine.process("email-template.html", context);
-
-            mails.add(Mail.withHtml(msg.getEmail(), msg.getSubject(), renderedTemplate));
+            String htmlContent = renderEmail(msg.getSubject(), msg.getBody());
+            mails.add(Mail.withHtml(msg.getEmail(), msg.getSubject(), htmlContent));
         }
 
         for (Mail mail : mails) {
         logger.info("\n" + mail.getTo() + "\n" + mail.getSubject() + "\n" + mail.getHtml());
         }
 
-
         return Uni.createFrom().item(Response.newBuilder().setResponseMessage("Successfully Send Email").build());
     }
 
+    public String renderEmail(String sub, String body) {
+        String renderedTemplate = "";
+        try {
+
+            // Load the Handlebars template from file
+            String templatePath = "C:\\Users\\z004vxjk\\IdeaProjects\\mail-engine\\src\\main\\resources\\templates\\handlebars\\email-template.hbs";
+            String templateContent = new String(Files.readAllBytes(Paths.get(templatePath)));
+
+            // Initialize Handlebars engine
+            Handlebars handlebars = new Handlebars();
+
+            // Compile the template
+            Template template = handlebars.compileInline(templateContent);
+
+            // Prepare data to render
+            Map<String, Object> data = new HashMap<>();
+            data.put("subject", sub);
+            data.put("body", body);
+
+            // Render the template with data
+            renderedTemplate = template.apply(data);
+
+        }catch (IOException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+        return renderedTemplate;
+    }
 }
 
