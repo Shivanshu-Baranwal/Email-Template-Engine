@@ -1,0 +1,1 @@
+<!DOCTYPE html><html><head><title>Email Template</title></head><body><h1>Subject- $subject</h1><p>Body- $body</p></body>

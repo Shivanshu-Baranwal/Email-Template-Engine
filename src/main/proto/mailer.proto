@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.brightly.mailengine.proto";
+option java_outer_classname = "MailEngineProto";
+
+package com.brightly.mailengine.proto;
+
+service MailEngine{
+  rpc sendMessage(Messages) returns ( Response);
+}
+
+message Message{
+  string subject = 1;
+  string body = 2;
+  string email = 3;
+}
+
+message Messages{
+  repeated Message messages = 1;
+}
+
+message Response{
+  string response_message = 1;
+}
