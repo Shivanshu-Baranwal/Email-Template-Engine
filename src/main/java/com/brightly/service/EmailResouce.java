@@ -4,26 +4,20 @@ import com.brightly.mailengine.proto.Message;
 import com.brightly.mailengine.proto.Messages;
 import com.brightly.mailengine.proto.MutinyMailEngineGrpc;
 import com.brightly.mailengine.proto.Response;
-//import freemarker.template.Configuration;
-//import freemarker.template.Template;
 
-//import com.github.mustachejava.DefaultMustacheFactory;
-//import com.github.mustachejava.Mustache;
-//import com.github.mustachejava.MustacheFactory;
 import io.quarkus.grpc.GrpcService;
 import io.quarkus.mailer.Mail;
 import io.smallrye.mutiny.Uni;
 import jakarta.inject.Inject;
+import org.apache.velocity.Template;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.VelocityEngine;
 import org.jboss.logging.Logger;
-import org.thymeleaf.TemplateEngine;
-import org.thymeleaf.context.Context;
 
-import java.io.IOException;
 import java.io.StringWriter;
+
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
 @GrpcService
@@ -32,28 +26,17 @@ public class EmailResouce extends MutinyMailEngineGrpc.MailEngineImplBase {
     @Inject
     Logger logger;
 
-
-    /*
-    For thymeleaf
-     */
-
     @Inject
-    TemplateEngine templateEngine;
+    VelocityEngine velocityEngine;
 
     @Override
     public Uni<Response> sendMessage(Messages request) {
-
 
         List<Message> msgs = request.getMessagesList();
         List<Mail> mails = new ArrayList<>();
 
         for (Message msg : msgs) {
-            Context context = new Context();
-            context.setVariable("Subject", msg.getSubject()); // Set dynamic value
-            context.setVariable("Body", msg.getBody()); // Set dynamic value
-
-            String renderedTemplate = templateEngine.process("email-template.html", context);
-
+            String renderedTemplate = renderEmail(msg.getSubject(), msg.getBody());
             mails.add(Mail.withHtml(msg.getEmail(), msg.getSubject(), renderedTemplate));
         }
 
@@ -61,9 +44,25 @@ public class EmailResouce extends MutinyMailEngineGrpc.MailEngineImplBase {
         logger.info("\n" + mail.getTo() + "\n" + mail.getSubject() + "\n" + mail.getHtml());
         }
 
-
         return Uni.createFrom().item(Response.newBuilder().setResponseMessage("Successfully Send Email").build());
     }
 
+    public String renderEmail(String subject, String body) {
+        VelocityContext context = new VelocityContext();
+        context.put("subject", subject);
+        context.put("body", body);
+
+        // Get the template
+        Template template = velocityEngine.getTemplate("template.vm");
+
+        // Render the template
+        StringWriter writer = new StringWriter();
+        template.merge(context, writer);
+
+        // Get the rendered template as a string
+        String renderedTemplate = writer.toString();
+
+        return renderedTemplate;
+    }
 }
 
