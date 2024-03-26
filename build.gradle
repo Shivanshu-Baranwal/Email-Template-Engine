@@ -23,7 +23,7 @@ dependencies {
     implementation 'io.quarkus:quarkus-mailer'
     implementation 'io.quarkus:quarkus-hibernate-reactive'
     implementation 'io.quarkus:quarkus-hibernate-reactive-panache'
-    implementation 'org.freemarker:freemarker:2.3.31'
+    implementation 'com.github.spullara.mustache.java:compiler:0.9.10'
 
 
     testImplementation 'io.quarkus:quarkus-junit5'
