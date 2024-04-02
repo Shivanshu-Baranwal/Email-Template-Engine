@@ -21,6 +21,7 @@ dependencies {
     implementation 'io.quarkus:quarkus-grpc'
     implementation 'io.quarkus:quarkus-arc'
     implementation 'io.quarkus:quarkus-mailer'
+    implementation 'io.quarkus:quarkus-reactive-pg-client'
     implementation 'io.quarkus:quarkus-hibernate-reactive'
     implementation 'io.quarkus:quarkus-hibernate-reactive-panache'
     implementation 'org.thymeleaf:thymeleaf:3.1.2.RELEASE'

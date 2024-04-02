@@ -6,20 +6,38 @@ option java_outer_classname = "MailEngineProto";
 
 package com.brightly.mailengine.proto;
 
-service MailEngine{
-  rpc sendMessage(Messages) returns ( Response);
+import "google/protobuf/empty.proto";
+
+service MailEngine {
+  rpc sendMessage(Message) returns (Response);
+  rpc createTemplate(Template) returns (TemplateId);
+  rpc sendMessageV2(Message1) returns (Response);
 }
 
-message Message{
+message Message {
   string subject = 1;
   string body = 2;
   string email = 3;
 }
 
-message Messages{
+message Messages {
   repeated Message messages = 1;
 }
 
-message Response{
+message Response {
   string response_message = 1;
+}
+
+message TemplateId {
+    string id = 1;
+}
+
+message Template {
+  string html = 1;
+}
+
+message Message1 {
+  string subject = 1;
+  string body = 2;
+  string id = 3;
 }
